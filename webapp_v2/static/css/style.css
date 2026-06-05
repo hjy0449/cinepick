@@ -437,6 +437,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   cursor: pointer;
 }
 
+.cp-logo-img{
+    height:42px;
+    width:auto;
+    display:block;
+}
+
 .cp-arrow-btn:hover { background: var(--accent); }
 .cp-arrow-prev { left: -20px; }
 .cp-arrow-next { right: -20px; }
