@@ -192,7 +192,7 @@
         <button class="cp-filter-chip" onclick="filterReviews(this,'로맨스')">로맨스</button>
       </div>
 
-      {% set show_reviews = db_reviews + dummy_reviews %}
+      {% set show_reviews = db_reviews if db_reviews else dummy_reviews %}
       {% for r in show_reviews %}
       <div class="cp-rv-card" data-genre="{{ r.genre }}">
         <div class="cp-rv-movie-row">
