@@ -148,7 +148,7 @@ def recommend():
 @app.route("/reviews")
 def reviews():
     page     = request.args.get("page", 1, type=int)
-    per_page = 10
+    per_page = 5
     skip     = (page - 1) * per_page
     total    = reviews_col.count_documents({})
     total_pages = max(1, -(-total // per_page))  # 올림 나눗셈
@@ -178,7 +178,7 @@ def reviews():
 @app.route("/community")
 def community():
     page     = request.args.get("page", 1, type=int)
-    per_page = 10
+    per_page = 5
     skip     = (page - 1) * per_page
     total    = posts_col.count_documents({})
     total_pages = max(1, -(-total // per_page))
