@@ -140,19 +140,6 @@ def movies_list():
     )
 
 
-@app.route("/ranking")
-def ranking():
-    movies = get_top_rated_movies(limit=20)
-    return render_template(
-        "movies.html",
-        movies=movies,
-        page_title="평점 높은 영화",
-        page_active="ranking",
-        query="",
-        genres=get_genres(),
-    )
-
-
 @app.route("/recommend")
 def recommend():
     return render_template("recommend.html")
