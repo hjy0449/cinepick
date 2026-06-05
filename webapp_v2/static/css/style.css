@@ -1,0 +1,442 @@
+/* =============================================
+   style.css — CinePick 공통 스타일
+   ============================================= */
+
+/* ─── CSS Variables ─── */
+:root {
+  --bg-primary:    #0d0d0d;
+  --bg-secondary:  #141414;
+  --bg-card:       #1a1a1a;
+  --bg-hover:      #222222;
+
+  --accent:        #e50914;
+  --accent-hover:  #f40612;
+  --accent-soft:   rgba(229, 9, 20, 0.15);
+
+  --text-primary:   #ffffff;
+  --text-secondary: #b3b3b3;
+  --text-muted:     #666666;
+
+  --border:        #2a2a2a;
+  --border-light:  #333333;
+
+  --star:          #f5c518;
+
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  16px;
+  --radius-xl:  24px;
+
+  --shadow-card: 0 4px 24px rgba(0,0,0,0.6);
+  --shadow-hover: 0 8px 40px rgba(0,0,0,0.8);
+
+  --font-display: 'Bebas Neue', cursive;
+  --font-body:    'Noto Sans KR', sans-serif;
+
+  --navbar-h: 60px;
+}
+
+/* ─── Reset & Base ─── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+img { display: block; max-width: 100%; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; }
+
+/* ─── Scrollbar ─── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-secondary); }
+::-webkit-scrollbar-thumb { background: #3a3a3a; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* =============================================
+   NAVBAR
+   ============================================= */
+.cp-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: var(--navbar-h);
+  background: rgba(13, 13, 13, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.cp-navbar__inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding: 0 24px;
+}
+
+/* 로고 */
+.cp-navbar__logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.cp-logo-icon {
+  width: 28px;
+  height: 28px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: #fff;
+  line-height: 1;
+}
+
+.cp-logo-text {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--text-primary);
+}
+
+/* 메뉴 */
+.cp-navbar__menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+
+.cp-menu-link {
+  padding: 6px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  transition: color 0.2s, background 0.2s;
+}
+
+.cp-menu-link:hover {
+  color: var(--text-primary);
+  background: var(--bg-hover);
+}
+
+.cp-menu-link.active {
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--accent);
+}
+
+/* 오른쪽 */
+.cp-navbar__right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.cp-search-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.cp-search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.cp-search-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 7px 16px 7px 34px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  width: 220px;
+  transition: border-color 0.2s, width 0.3s;
+  outline: none;
+}
+
+.cp-search-input:focus {
+  border-color: var(--accent);
+  width: 280px;
+}
+
+.cp-search-input::placeholder { color: var(--text-muted); }
+
+.cp-icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.cp-icon-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.cp-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--border-light);
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.cp-avatar:hover { border-color: var(--accent); }
+.cp-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+/* =============================================
+   MAIN
+   ============================================= */
+.cp-main {
+  padding-top: var(--navbar-h);
+  min-height: 100vh;
+}
+
+/* =============================================
+   FOOTER
+   ============================================= */
+.cp-footer {
+  padding: 24px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+}
+
+/* =============================================
+   SHARED COMPONENTS
+   ============================================= */
+
+/* 섹션 헤더 */
+.cp-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.cp-section-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cp-section-subtitle {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 8px;
+  font-weight: 400;
+}
+
+.cp-see-more {
+  font-size: 13px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+
+.cp-see-more:hover { color: var(--text-primary); }
+
+/* 영화 카드 (공통) */
+.cp-movie-card {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  flex-shrink: 0;
+}
+
+.cp-movie-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+}
+
+.cp-movie-card__poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  display: block;
+}
+
+.cp-movie-card__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.25s;
+  display: flex;
+  align-items: flex-end;
+  padding: 12px;
+}
+
+.cp-movie-card:hover .cp-movie-card__overlay { opacity: 1; }
+
+.cp-movie-card__info {
+  padding: 10px 8px 8px;
+}
+
+.cp-movie-card__title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cp-movie-card__rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.cp-movie-card__rating .star-icon { color: var(--star); font-size: 11px; }
+
+/* 랭크 뱃지 */
+.cp-rank-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+/* 별점 */
+.cp-stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  color: var(--star);
+  font-size: 13px;
+}
+
+/* 버튼 */
+.cp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-body);
+  transition: background 0.2s, transform 0.15s;
+}
+
+.cp-btn:active { transform: scale(0.97); }
+
+.cp-btn--primary {
+  background: var(--accent);
+  color: #fff;
+}
+.cp-btn--primary:hover { background: var(--accent-hover); }
+
+.cp-btn--outline {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+}
+.cp-btn--outline:hover { background: var(--bg-hover); }
+
+/* 탭 */
+.cp-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+
+.cp-tab {
+  padding: 10px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: color 0.2s, border-color 0.2s;
+  cursor: pointer;
+}
+
+.cp-tab:hover { color: var(--text-primary); }
+
+.cp-tab.active {
+  color: var(--text-primary);
+  border-bottom-color: var(--accent);
+}
+
+/* 캐러셀 화살표 버튼 */
+.cp-arrow-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid var(--border-light);
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+
+.cp-arrow-btn:hover { background: var(--accent); }
+.cp-arrow-prev { left: -20px; }
+.cp-arrow-next { right: -20px; }

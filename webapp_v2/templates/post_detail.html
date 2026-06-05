@@ -1,0 +1,396 @@
+{% extends "layout.html" %}
+{% set active_page = 'community' %}
+
+{% block title %}{{ post.title }} — CinePick{% endblock %}
+
+{% block extra_css %}
+<style>
+.cp-post-detail {
+  max-width: 860px; margin: 40px auto; padding: 0 24px 80px;
+}
+
+/* 헤더 */
+.cp-pd-header {
+  border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 28px;
+}
+.cp-pd-cat {
+  font-size: 12px; font-weight: 700; color: var(--accent);
+  letter-spacing: 0.5px; margin-bottom: 10px;
+}
+.cp-pd-title {
+  font-size: 26px; font-weight: 700; color: var(--text-primary);
+  line-height: 1.4; margin-bottom: 14px;
+}
+.cp-pd-meta {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 13px; color: var(--text-muted);
+}
+.cp-pd-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--accent-soft); border: 1px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--accent);
+}
+
+/* 영화 포스터 */
+.cp-pd-movie {
+  display: flex; gap: 16px; align-items: flex-start;
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;
+}
+.cp-pd-movie-poster {
+  width: 70px; height: 105px; object-fit: cover;
+  border-radius: var(--radius-sm); flex-shrink: 0;
+}
+.cp-pd-movie-title {
+  font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;
+}
+
+/* 본문 */
+.cp-pd-body {
+  font-size: 15px; color: var(--text-secondary);
+  line-height: 1.9; margin-bottom: 32px;
+  white-space: pre-wrap;
+}
+
+/* 좋아요 버튼 */
+.cp-pd-actions {
+  display: flex; gap: 10px; margin-bottom: 40px;
+  padding-bottom: 32px; border-bottom: 1px solid var(--border);
+}
+.cp-like-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 10px 20px; border-radius: 24px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-muted); font-size: 14px; cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+}
+.cp-like-btn:hover, .cp-like-btn.liked {
+  border-color: var(--accent); color: var(--accent); background: var(--accent-soft);
+}
+
+/* 댓글 섹션 */
+.cp-comments-title {
+  font-size: 16px; font-weight: 700; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cp-comments-title span {
+  color: var(--accent); font-size: 14px;
+}
+
+/* 댓글 작성 */
+.cp-comment-write {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 16px; margin-bottom: 24px;
+}
+.cp-comment-textarea {
+  width: 100%; background: var(--bg-secondary);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 12px; color: var(--text-primary); font-size: 14px;
+  resize: none; outline: none; font-family: var(--font-body);
+  transition: border-color 0.2s; min-height: 80px;
+}
+.cp-comment-textarea:focus { border-color: var(--accent); }
+.cp-comment-textarea::placeholder { color: var(--text-muted); }
+.cp-comment-footer {
+  display: flex; justify-content: flex-end; margin-top: 10px;
+}
+
+/* 댓글 아이템 */
+.cp-comment-item {
+  border-bottom: 1px solid var(--border); padding: 18px 0;
+}
+.cp-comment-item:last-child { border-bottom: none; }
+.cp-comment-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+}
+.cp-comment-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg-secondary); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--text-primary); flex-shrink: 0;
+}
+.cp-comment-name { font-size: 13px; font-weight: 700; color: var(--text-primary); }
+.cp-comment-date { font-size: 12px; color: var(--text-muted); }
+.cp-comment-text {
+  font-size: 14px; color: var(--text-secondary);
+  line-height: 1.7; margin-bottom: 10px; padding-left: 38px;
+}
+.cp-comment-actions {
+  display: flex; align-items: center; gap: 14px;
+  padding-left: 38px; font-size: 12px; color: var(--text-muted);
+}
+.cp-comment-actions button {
+  background: none; border: none; cursor: pointer;
+  font-size: 12px; color: var(--text-muted);
+  font-family: var(--font-body); transition: color 0.2s;
+  display: flex; align-items: center; gap: 4px;
+}
+.cp-comment-actions button:hover { color: var(--accent); }
+
+/* 대댓글 */
+.cp-replies {
+  margin-left: 38px; margin-top: 12px;
+  border-left: 2px solid var(--border); padding-left: 16px;
+}
+.cp-reply-item {
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+}
+.cp-reply-item:last-child { border-bottom: none; }
+
+/* 대댓글 작성 폼 */
+.cp-reply-write {
+  margin-left: 38px; margin-top: 10px;
+  display: none;
+}
+.cp-reply-write.show { display: block; }
+.cp-reply-textarea {
+  width: 100%; background: var(--bg-secondary);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  padding: 10px 12px; color: var(--text-primary); font-size: 13px;
+  resize: none; outline: none; font-family: var(--font-body);
+  transition: border-color 0.2s; min-height: 60px;
+}
+.cp-reply-textarea:focus { border-color: var(--accent); }
+.cp-reply-textarea::placeholder { color: var(--text-muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cp-post-detail">
+
+  <!-- 뒤로가기 -->
+  <a href="/community" style="display:inline-flex;align-items:center;gap:6px;
+     color:var(--text-muted);font-size:13px;margin-bottom:24px;text-decoration:none;">
+    <i class="fa-solid fa-chevron-left"></i> 커뮤니티로 돌아가기
+  </a>
+
+  <!-- 글 헤더 -->
+  <div class="cp-pd-header">
+    <div class="cp-pd-cat">{{ post.cat }}</div>
+    <h1 class="cp-pd-title">{{ post.title }}</h1>
+    <div class="cp-pd-meta">
+      <div class="cp-pd-avatar">{{ post.author[0] }}</div>
+      <span style="font-weight:600;color:var(--text-primary);">{{ post.author }}</span>
+      <span>{{ post.date }}</span>
+      <span><i class="fa-regular fa-eye"></i> {{ post.views }}</span>
+      <span><i class="fa-regular fa-comment"></i> {{ post.comment_count }}</span>
+    </div>
+  </div>
+
+  <!-- 관련 영화 포스터 -->
+  {% if post.movie_poster %}
+  <div class="cp-pd-movie">
+    <img class="cp-pd-movie-poster" src="{{ post.movie_poster }}" alt="{{ post.movie_title }}"
+         onerror="this.style.display='none'" />
+    <div>
+      <div class="cp-pd-movie-title">🎬 {{ post.movie_title }}</div>
+      <div style="font-size:12px;color:var(--text-muted);">관련 영화</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 본문 -->
+  <div class="cp-pd-body">{{ post.content }}</div>
+
+  <!-- 좋아요 -->
+  <div class="cp-pd-actions">
+    <button class="cp-like-btn {% if liked_post %}liked{% endif %}"
+            id="post-like-btn" onclick="togglePostLike()">
+      <i class="fa-{% if liked_post %}solid{% else %}regular{% endif %} fa-heart"></i>
+      <span id="post-like-count">{{ post.likes }}</span>
+    </button>
+  </div>
+
+  <!-- 댓글 -->
+  <div class="cp-comments-title">
+    댓글 <span id="comment-total">{{ comments|length }}</span>개
+  </div>
+
+  <!-- 댓글 작성 -->
+  {% if session.user_id %}
+  <div class="cp-comment-write">
+    <textarea class="cp-comment-textarea" id="main-comment-text"
+              placeholder="댓글을 입력하세요..."></textarea>
+    <div class="cp-comment-footer">
+      <button class="cp-btn cp-btn--primary" style="padding:8px 20px;font-size:13px;"
+              onclick="submitComment(null)">
+        <i class="fa-solid fa-paper-plane"></i> 등록
+      </button>
+    </div>
+  </div>
+  {% else %}
+  <div style="text-align:center;padding:20px;background:var(--bg-card);
+              border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:24px;">
+    <a href="/login" style="color:var(--accent);font-size:14px;">로그인</a>
+    <span style="font-size:14px;color:var(--text-muted);"> 후 댓글을 달 수 있어요</span>
+  </div>
+  {% endif %}
+
+  <!-- 댓글 목록 -->
+  <div id="comments-list">
+    {% for c in comments %}
+    <div class="cp-comment-item" id="comment-{{ c.id }}">
+      <div class="cp-comment-header">
+        <div class="cp-comment-avatar">{{ c.author[0] }}</div>
+        <span class="cp-comment-name">{{ c.author }}</span>
+        <span class="cp-comment-date">{{ c.date }}</span>
+        {% if session.user_name == c.author %}
+        <button onclick="deleteComment('{{ c.id }}')"
+                style="margin-left:auto;background:none;border:none;
+                       color:var(--text-muted);font-size:12px;cursor:pointer;">
+          <i class="fa-regular fa-trash-can"></i>
+        </button>
+        {% endif %}
+      </div>
+      <div class="cp-comment-text">{{ c.text }}</div>
+      <div class="cp-comment-actions">
+        <button onclick="toggleCommentLike(this, '{{ c.id }}')"
+                class="{% if c.id in liked_comments %}liked-comment{% endif %}">
+          <i class="fa-{% if c.id in liked_comments %}solid{% else %}regular{% endif %} fa-heart"></i>
+          <span class="clc">{{ c.likes }}</span>
+        </button>
+        {% if session.user_id %}
+        <button onclick="toggleReplyForm('{{ c.id }}')">
+          <i class="fa-regular fa-comment"></i> 답글
+        </button>
+        {% endif %}
+      </div>
+
+      <!-- 대댓글 목록 -->
+      {% if c.replies %}
+      <div class="cp-replies">
+        {% for r in c.replies %}
+        <div class="cp-reply-item" id="reply-{{ r.id }}">
+          <div class="cp-comment-header">
+            <div class="cp-comment-avatar" style="width:24px;height:24px;font-size:10px;">{{ r.author[0] }}</div>
+            <span class="cp-comment-name">{{ r.author }}</span>
+            <span class="cp-comment-date">{{ r.date }}</span>
+            {% if session.user_name == r.author %}
+            <button onclick="deleteComment('{{ r.id }}')"
+                    style="margin-left:auto;background:none;border:none;
+                           color:var(--text-muted);font-size:12px;cursor:pointer;">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+            {% endif %}
+          </div>
+          <div class="cp-comment-text">{{ r.text }}</div>
+          <div class="cp-comment-actions">
+            <button onclick="toggleCommentLike(this, '{{ r.id }}')"
+                    class="{% if r.id in liked_comments %}liked-comment{% endif %}">
+              <i class="fa-{% if r.id in liked_comments %}solid{% else %}regular{% endif %} fa-heart"></i>
+              <span class="clc">{{ r.likes }}</span>
+            </button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- 대댓글 작성 폼 -->
+      <div class="cp-reply-write" id="reply-form-{{ c.id }}">
+        <textarea class="cp-reply-textarea" id="reply-text-{{ c.id }}"
+                  placeholder="답글을 입력하세요..."></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px;">
+          <button class="cp-btn cp-btn--outline" style="padding:6px 14px;font-size:12px;"
+                  onclick="toggleReplyForm('{{ c.id }}')">취소</button>
+          <button class="cp-btn cp-btn--primary" style="padding:6px 14px;font-size:12px;"
+                  onclick="submitComment('{{ c.id }}')">등록</button>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const POST_ID = "{{ post.id }}";
+
+  // ── 글 좋아요 ──
+  async function togglePostLike() {
+    {% if not session.user_id %}
+      window.location.href = '/login'; return;
+    {% endif %}
+    const btn   = document.getElementById('post-like-btn');
+    const count = document.getElementById('post-like-count');
+    const liked = btn.classList.contains('liked');
+
+    const res = await fetch(`/api/posts/${POST_ID}/like`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ unlike: liked })
+    });
+    if (res.ok) {
+      btn.classList.toggle('liked');
+      const icon = btn.querySelector('i');
+      icon.className = liked ? 'fa-regular fa-heart' : 'fa-solid fa-heart';
+      count.textContent = parseInt(count.textContent) + (liked ? -1 : 1);
+    }
+  }
+
+  // ── 댓글 좋아요 ──
+  async function toggleCommentLike(btn, commentId) {
+    {% if not session.user_id %}
+      window.location.href = '/login'; return;
+    {% endif %}
+    const liked = btn.classList.contains('liked-comment');
+    const res = await fetch(`/api/comments/${commentId}/like`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ unlike: liked })
+    });
+    if (res.ok) {
+      btn.classList.toggle('liked-comment');
+      const icon  = btn.querySelector('i');
+      const count = btn.querySelector('.clc');
+      icon.className  = liked ? 'fa-regular fa-heart' : 'fa-solid fa-heart';
+      btn.style.color = liked ? '' : 'var(--accent)';
+      count.textContent = parseInt(count.textContent) + (liked ? -1 : 1);
+    }
+  }
+
+  // ── 대댓글 폼 토글 ──
+  function toggleReplyForm(commentId) {
+    const form = document.getElementById('reply-form-' + commentId);
+    form.classList.toggle('show');
+    if (form.classList.contains('show')) {
+      document.getElementById('reply-text-' + commentId).focus();
+    }
+  }
+
+  // ── 댓글/대댓글 등록 ──
+  async function submitComment(parentId) {
+    const textEl = parentId
+      ? document.getElementById('reply-text-' + parentId)
+      : document.getElementById('main-comment-text');
+    const text = textEl.value.trim();
+    if (!text) { textEl.focus(); return; }
+
+    const res = await fetch('/api/comments', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ post_id: POST_ID, text, parent_id: parentId })
+    });
+    if (res.ok) {
+      textEl.value = '';
+      if (parentId) {
+        document.getElementById('reply-form-' + parentId).classList.remove('show');
+      }
+      location.reload();
+    } else {
+      alert('등록 실패. 다시 시도해 주세요.');
+    }
+  }
+
+  // ── 댓글 삭제 ──
+  async function deleteComment(commentId) {
+    if (!confirm('댓글을 삭제할까요?')) return;
+    const res = await fetch('/api/comments/' + commentId, { method: 'DELETE' });
+    if (res.ok) { location.reload(); }
+    else { alert('삭제 실패.'); }
+  }
+</script>
+{% endblock %}

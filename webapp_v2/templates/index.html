@@ -1,0 +1,206 @@
+{% extends "layout.html" %}
+{% set active_page = 'home' %}
+
+{% block title %}CinePick — 오늘의 인기 영화{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+{% endblock %}
+
+{% block content %}
+
+<!-- ================================================
+     오늘의 인기 영화 — Coverflow Carousel
+================================================= -->
+<section class="cp-section cp-popular">
+  <div class="cp-container">
+
+    <div class="cp-section-header">
+      <h2 class="cp-section-title">오늘의 인기 영화</h2>
+      <a href="/movies" class="cp-see-more">더보기 <i class="fa-solid fa-chevron-right"></i></a>
+    </div>
+
+    <!-- Swiper Coverflow -->
+    <div class="swiper cp-coverflow-swiper">
+      <div class="swiper-wrapper">
+
+        {% for movie in popular_movies %}
+        <div class="swiper-slide">
+          <a href="/movie/{{ movie.id }}" class="cp-movie-card cp-coverflow-card">
+            <span class="cp-rank-badge">{{ movie.rank }}</span>
+            <img class="cp-movie-card__poster" src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy" />
+            <div class="cp-movie-card__overlay"></div>
+          </a>
+          <div class="cp-coverflow-meta">
+            <p class="cp-movie-card__title">{{ movie.title }}</p>
+            <div class="cp-movie-card__rating">
+              <i class="fa-solid fa-star star-icon"></i>
+              <span>{{ movie.rating }}</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+
+      <!-- 페이지네이션 -->
+      <div class="swiper-pagination cp-coverflow-pagination"></div>
+    </div><!-- /swiper -->
+
+  </div>
+</section>
+
+
+<!-- ================================================
+     AI 추천 영화
+================================================= -->
+<section class="cp-section cp-ai-recommend">
+  <div class="cp-container">
+
+    <div class="cp-section-header">
+      <div>
+        <h2 class="cp-section-title">
+          AI 추천 영화
+          <span class="cp-ai-badge"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+        </h2>
+        <span class="cp-section-subtitle">TMDb 장르/평점 데이터를 기반으로 추천했어요</span>
+      </div>
+      <a href="/recommend" class="cp-see-more">더보기 <i class="fa-solid fa-chevron-right"></i></a>
+    </div>
+
+    <!-- 캐러셀 row 1 -->
+    <div class="cp-ai-carousel-wrap">
+      <button class="cp-arrow-btn cp-arrow-prev" id="ai-prev"><i class="fa-solid fa-chevron-left"></i></button>
+
+      <div class="cp-ai-grid" id="ai-carousel">
+        {% for movie in ai_movies %}
+        <a href="/movie/{{ movie.id }}" class="cp-movie-card cp-ai-card">
+          <img class="cp-movie-card__poster" src="{{ movie.poster }}" alt="{{ movie.title }}" loading="lazy" />
+          <div class="cp-movie-card__overlay"></div>
+          <div class="cp-movie-card__info">
+            <p class="cp-movie-card__title">{{ movie.title }}</p>
+            <div class="cp-movie-card__rating">
+              <i class="fa-solid fa-star star-icon"></i>
+              <span>{{ movie.rating }}</span>
+            </div>
+          </div>
+        </a>
+        {% endfor %}
+
+      </div>
+
+      <button class="cp-arrow-btn cp-arrow-next" id="ai-next"><i class="fa-solid fa-chevron-right"></i></button>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ================================================
+     커뮤니티 인기글 / 최신글
+================================================= -->
+<section class="cp-section cp-community">
+  <div class="cp-container">
+
+    <div class="cp-section-header">
+      <div style="display:flex; align-items:center; gap:20px;">
+        <h2 class="cp-section-title">커뮤니티</h2>
+        <div class="cp-tabs" style="margin-bottom:0; border-bottom:none;">
+          <span class="cp-tab active" onclick="switchTab(this,'popular')">인기글</span>
+          <span class="cp-tab" onclick="switchTab(this,'recent')">최신글</span>
+        </div>
+      </div>
+      <a href="/community" class="cp-see-more">더보기 <i class="fa-solid fa-chevron-right"></i></a>
+    </div>
+
+    <!-- 인기글 -->
+    <div id="tab-popular" class="cp-review-grid">
+      {% for p in popular_posts %}
+      <a href="/community/{{ p.id }}" class="cp-review-card" style="text-decoration:none;">
+        <div class="cp-review-card__header">
+          {% if p.movie_poster %}
+          <img class="cp-review-card__avatar" src="{{ p.movie_poster }}"
+               style="border-radius:4px;width:38px;height:54px;object-fit:cover;"
+               alt="{{ p.title }}" onerror="this.style.display='none'" />
+          {% else %}
+          <div class="cp-review-card__avatar"
+               style="background:var(--accent-soft);color:var(--accent);
+                      font-weight:700;display:flex;align-items:center;justify-content:center;">
+            {{ p.author[0] }}
+          </div>
+          {% endif %}
+          <div>
+            <p class="cp-review-card__user">{{ p.author }}</p>
+            <span style="font-size:11px;color:var(--accent);font-weight:700;">{{ p.cat }}</span>
+          </div>
+        </div>
+        <p class="cp-review-card__text" style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">
+          {{ p.title }}
+        </p>
+        <p class="cp-review-card__text">{{ p.preview }}...</p>
+        <div class="cp-review-card__footer">
+          <span class="cp-review-card__likes">
+            <i class="fa-regular fa-heart"></i> {{ p.likes }}
+            &nbsp;
+            <i class="fa-regular fa-comment"></i> {{ p.comments }}
+          </span>
+          <span class="cp-review-card__date">{{ p.date }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+    <!-- 최신글 -->
+    <div id="tab-recent" class="cp-review-grid" style="display:none;">
+      {% for p in recent_posts %}
+      <a href="/community/{{ p.id }}" class="cp-review-card" style="text-decoration:none;">
+        <div class="cp-review-card__header">
+          {% if p.movie_poster %}
+          <img class="cp-review-card__avatar" src="{{ p.movie_poster }}"
+               style="border-radius:4px;width:38px;height:54px;object-fit:cover;"
+               alt="{{ p.title }}" onerror="this.style.display='none'" />
+          {% else %}
+          <div class="cp-review-card__avatar"
+               style="background:var(--accent-soft);color:var(--accent);
+                      font-weight:700;display:flex;align-items:center;justify-content:center;">
+            {{ p.author[0] }}
+          </div>
+          {% endif %}
+          <div>
+            <p class="cp-review-card__user">{{ p.author }}</p>
+            <span style="font-size:11px;color:var(--accent);font-weight:700;">{{ p.cat }}</span>
+          </div>
+        </div>
+        <p class="cp-review-card__text" style="font-weight:600;color:var(--text-primary);margin-bottom:4px;">
+          {{ p.title }}
+        </p>
+        <p class="cp-review-card__text">{{ p.preview }}...</p>
+        <div class="cp-review-card__footer">
+          <span class="cp-review-card__likes">
+            <i class="fa-regular fa-heart"></i> {{ p.likes }}
+            &nbsp;
+            <i class="fa-regular fa-comment"></i> {{ p.comments }}
+          </span>
+          <span class="cp-review-card__date">{{ p.date }}</span>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+  </div>
+</section>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/home.js') }}"></script>
+<script>
+  function switchTab(el, tab) {
+    document.querySelectorAll('.cp-community .cp-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('tab-popular').style.display = tab === 'popular' ? 'grid' : 'none';
+    document.getElementById('tab-recent').style.display  = tab === 'recent'  ? 'grid' : 'none';
+  }
+</script>
+{% endblock %}

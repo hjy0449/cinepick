@@ -1,0 +1,59 @@
+{% extends "layout.html" %}
+{% set active_page = page_active | default('movies') %}
+
+{% block title %}{{ page_title }} — CinePick{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}" />
+{% endblock %}
+
+{% block content %}
+<section class="cp-section">
+  <div class="cp-container">
+    <div class="cp-section-header">
+      <div>
+        <h2 class="cp-section-title">{{ page_title }}</h2>
+        <span class="cp-section-subtitle">TMDb API에서 가져온 영화 목록입니다</span>
+      </div>
+    </div>
+
+    <form action="/movies" method="get" style="display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;">
+      <input name="q" value="{{ query }}" placeholder="영화 제목 검색"
+             style="min-width:260px;flex:1;background:var(--bg-secondary);border:1px solid var(--border);
+                    color:var(--text-primary);border-radius:var(--radius-sm);padding:11px 14px;outline:none;" />
+      <button class="cp-btn cp-btn--primary" type="submit">
+        <i class="fa-solid fa-magnifying-glass"></i> 검색
+      </button>
+    </form>
+
+    {% if genres %}
+    <div class="cp-tabs" style="display:flex;gap:8px;flex-wrap:wrap;border-bottom:none;margin-bottom:24px;">
+      <a href="/movies" class="cp-tag" style="text-decoration:none;">전체</a>
+      {% for genre in genres[:10] %}
+      <a href="/movies?genre={{ genre.id }}" class="cp-tag" style="text-decoration:none;">{{ genre.name }}</a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if movies %}
+    <div class="cp-related-grid">
+      {% for movie in movies %}
+      <a href="/movie/{{ movie.id }}" class="cp-related-card">
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}" class="cp-movie-card__poster" loading="lazy" />
+        <div class="cp-movie-card__info">
+          <p class="cp-movie-card__title">{{ movie.title }}</p>
+          <div class="cp-movie-card__rating">
+            <i class="fa-solid fa-star star-icon"></i>
+            <span>{{ movie.rating }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:var(--text-secondary);">검색 결과가 없습니다.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

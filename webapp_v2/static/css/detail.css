@@ -1,0 +1,694 @@
+/* =============================================
+   detail.css — 영화 상세 페이지 전용 스타일
+   ============================================= */
+
+/* =============================================
+   HERO — 배경 이미지 섹션
+   ============================================= */
+.cp-detail-hero {
+  position: relative;
+  min-height: 480px;
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 48px;
+  background-image: var(--backdrop);
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+}
+
+.cp-detail-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(to top,  #0d0d0d 0%, rgba(13,13,13,0.6) 50%, rgba(13,13,13,0.2) 100%),
+    linear-gradient(to right, rgba(13,13,13,0.85) 0%, transparent 60%);
+}
+
+.cp-detail-hero .cp-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px;
+  width: 100%;
+}
+
+.cp-detail-hero__content {
+  display: flex;
+  align-items: flex-end;
+  gap: 36px;
+}
+
+/* ─── 포스터 ─── */
+.cp-detail-poster-wrap {
+  flex-shrink: 0;
+  position: relative;
+}
+
+.cp-detail-poster {
+  width: 180px;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: 0 16px 48px rgba(0,0,0,0.8);
+  display: block;
+}
+
+/* ─── 메타 정보 ─── */
+.cp-detail-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 4px;
+}
+
+.cp-detail-title {
+  /* ★ 한글 폰트 튕김 버그 수정 및 현대적인 볼드 감성 적용 */
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 36px;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+  line-height: 1.2;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+}
+
+.cp-detail-original {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: -6px;
+}
+
+.cp-detail-rating-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-detail-score {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cp-detail-count {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* 태그 */
+.cp-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.cp-tag {
+  padding: 4px 10px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  backdrop-filter: blur(4px);
+}
+
+/* 감독/출연 */
+.cp-detail-crew {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.cp-crew-label {
+  color: var(--text-muted);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.cp-crew-value {
+  color: var(--text-secondary);
+}
+
+/* 액션 버튼 */
+.cp-detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* 찜하기 버튼 — 토글 상태 */
+.cp-wishlist-btn.active {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.cp-wishlist-btn.active .fa-heart {
+  font-weight: 900; /* solid */
+}
+
+/* =============================================
+   DETAIL BODY
+   ============================================= */
+.cp-detail-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+
+/* ─── 탭 ─── */
+.cp-detail-tabs {
+  margin-top: 32px;
+  margin-bottom: 28px;
+}
+
+.cp-detail-tabs .cp-tab {
+  font-size: 14px;
+  padding: 12px 20px;
+}
+
+/* ─── 탭 패널 ─── */
+.cp-tab-panel {
+  display: none;
+}
+
+.cp-tab-panel.active {
+  display: block;
+  animation: fadeIn 0.25s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* =============================================
+   줄거리 탭 레이아웃
+   ============================================= */
+.cp-synopsis-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 40px;
+  align-items: start;
+}
+
+/* ─── 줄거리 텍스트 ─── */
+.cp-synopsis-text {
+  color: var(--text-secondary);
+  font-size: 15px;
+  line-height: 1.9;
+}
+
+.cp-synopsis-text p {
+  /* ★ 본문이 항상 온전히 다 나오도록 불필요한 말줄임 제한 해제 */
+  overflow: visible;
+  display: block;
+}
+
+/* =============================================
+   평점 & 리뷰 BOX
+   ============================================= */
+.cp-rating-box {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+/* ★ 우측 레이아웃 최상단에 배치된 보러가기 플랫폼 전용 스타일 */
+.cp-rating-box .cp-watch-providers {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 0;
+  margin-bottom: 24px; /* 아래 '평점 & 리뷰' 타이틀과의 여백 확보 */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cp-rating-box .cp-providers-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.cp-rating-box .cp-provider-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cp-rating-box .cp-provider-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  transition: transform 0.2s, border-color 0.2s;
+  text-decoration: none;
+}
+
+.cp-rating-box .cp-provider-item:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.cp-rating-box .cp-provider-logo {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.cp-rating-box .cp-provider-name {
+  font-size: 12px;
+  color: var(--text-primary);
+}
+
+.cp-rating-box__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+
+.cp-rating-box__summary {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.cp-rating-big {
+  font-size: 52px;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.cp-rating-count {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ─── 별점 분포 바 ─── */
+.cp-rating-bars {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 24px;
+}
+
+.cp-rating-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cp-rating-bar-label {
+  width: 26px;
+  flex-shrink: 0;
+  text-align: right;
+}
+
+.cp-rating-bar-track {
+  width: 100%;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cp-rating-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.8s ease;
+}
+
+.cp-rating-bar-pct {
+  width: 30px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ─── 미니 리뷰 목록 ─── */
+.cp-mini-reviews {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.cp-mini-review {
+  padding: 14px 0;
+  border-top: 1px solid var(--border);
+}
+
+.cp-mini-review__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.cp-mini-review__avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid var(--border-light);
+}
+
+.cp-mini-review__user {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.cp-mini-review__date {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-left: auto;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
+
+.cp-mini-review__text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  padding-left: 42px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cp-mini-review__likes {
+  margin-top: 8px;
+  padding-left: 42px;
+  font-size: 12px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cp-mini-review__likes i {
+  color: var(--accent);
+}
+
+/* =============================================
+   출연/제작진 탭
+   ============================================= */
+.cp-cast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 20px;
+}
+
+.cp-cast-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.cp-cast-card__img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-light);
+}
+
+.cp-cast-card__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.cp-cast-card__role {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: -4px;
+}
+
+/* =============================================
+   리뷰 탭 (전체)
+   ============================================= */
+.cp-review-write {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.cp-review-write__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 14px;
+}
+
+.cp-star-select {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.cp-star-select i {
+  font-size: 22px;
+  color: var(--border-light);
+  cursor: pointer;
+  transition: color 0.15s, transform 0.15s;
+}
+
+.cp-star-select i:hover,
+.cp-star-select i.active {
+  color: var(--star);
+}
+
+.cp-star-select i:hover {
+  transform: scale(1.2);
+}
+
+.cp-review-textarea {
+  width: 100%;
+  min-height: 80px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.cp-review-textarea:focus {
+  border-color: var(--accent);
+}
+
+.cp-review-textarea::placeholder {
+  color: var(--text-muted);
+}
+
+.cp-review-write__footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+.cp-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.cp-review-item {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+
+.cp-review-item:hover {
+  border-color: var(--border-light);
+}
+
+.cp-review-item__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.cp-review-item__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.cp-review-item__user {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.cp-review-item__date {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+.cp-review-item__text {
+  font-size: 14px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  margin-bottom: 14px;
+}
+
+.cp-review-item__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cp-review-item__likes {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.cp-review-item__likes:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+/* =============================================
+   추천 영화 탭
+   ============================================= */
+.cp-related-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 16px;
+}
+
+.cp-related-card {
+  display: block;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--bg-card);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+
+.cp-related-card:hover {
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: var(--shadow-hover);
+}
+
+.cp-related-card .cp-movie-card__poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+}
+
+.cp-related-card .cp-movie-card__info {
+  padding: 8px;
+}
+
+/* =============================================
+   RESPONSIVE (반응형 모드 고정 및 중복 정리)
+   ============================================= */
+@media (max-width: 1024px) {
+  /* 태블릿 및 모바일 기기 크기가 되면 2단 분할을 해제하고 
+     세로로 흐르도록 1fr 처리해 쾌적한 뷰를 유지합니다 */
+  .cp-synopsis-layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .cp-related-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .cp-detail-hero {
+    min-height: 360px;
+    padding-bottom: 32px;
+  }
+
+  .cp-detail-hero__content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .cp-detail-poster {
+    width: 120px;
+  }
+
+  .cp-detail-title {
+    font-size: 28px;
+  }
+
+  .cp-related-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .cp-detail-poster {
+    width: 100px;
+  }
+
+  .cp-detail-title {
+    font-size: 24px;
+  }
+
+  .cp-detail-actions {
+    flex-direction: column;
+  }
+
+  .cp-related-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

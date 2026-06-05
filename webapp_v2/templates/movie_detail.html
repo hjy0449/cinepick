@@ -1,0 +1,369 @@
+{% extends "layout.html" %}
+{% set active_page = 'movies' %}
+
+{% block title %}{{ movie.title }} — CinePick{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}" />
+{% endblock %}
+
+{% block content %}
+
+
+<!-- ================================================
+     HERO — 배경 이미지
+================================================= -->
+<div class="cp-detail-hero" style="--backdrop: url('{{ movie.backdrop }}')">
+  <div class="cp-detail-hero__overlay"></div>
+
+  <div class="cp-container">
+    <div class="cp-detail-hero__content">
+
+      <!-- 포스터 -->
+      <div class="cp-detail-poster-wrap">
+        <img src="{{ movie.poster }}" alt="{{ movie.title }}" class="cp-detail-poster" />
+      </div>
+
+      <!-- 기본 정보 -->
+      <div class="cp-detail-meta">
+        <h1 class="cp-detail-title">{{ movie.title }}</h1>
+        <p class="cp-detail-original">{{ movie.original_title }}</p>
+
+        <div class="cp-detail-rating-row">
+          <i class="fa-solid fa-star" style="color:var(--star);"></i>
+          <span class="cp-detail-score">{{ movie.rating }}</span>
+          <span class="cp-detail-count">({{ movie.rating_count }}명)</span>
+        </div>
+
+        <div class="cp-detail-tags">
+          {% for g in movie.genres %}
+          <span class="cp-tag">{{ g }}</span>
+          {% endfor %}
+          <span class="cp-tag">{{ movie.runtime }}</span>
+          <span class="cp-tag">{{ movie.age_rating }}</span>
+        </div>
+
+        <p class="cp-detail-crew">
+          <span class="cp-crew-label">감독</span>
+          <span class="cp-crew-value">{{ movie.director }}</span>
+        </p>
+        <p class="cp-detail-crew">
+          <span class="cp-crew-label">출연</span>
+          <span class="cp-crew-value">{{ movie.cast | join(', ') }}</span>
+        </p>
+
+        <div class="cp-detail-actions">
+          <button class="cp-btn cp-btn--primary" onclick="document.getElementById('detail-tabs').querySelector('[data-target=tab-reviews]').click(); document.querySelector('.cp-review-textarea')?.focus();">
+            <i class="fa-solid fa-pen"></i> 리뷰 작성
+          </button>
+          <button class="cp-btn cp-btn--outline cp-wishlist-btn"
+                  id="wishlist-btn" onclick="toggleWishlist()">
+            <i class="fa-regular fa-heart" id="wishlist-icon"></i>
+            <span id="wishlist-text">찜하기</span>
+          </button>
+          <button class="cp-btn cp-btn--outline">
+            <i class="fa-solid fa-share-nodes"></i> 공유
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div><!-- /hero -->
+
+
+<!-- ================================================
+     DETAIL BODY
+================================================= -->
+<div class="cp-container cp-detail-body">
+
+  <!-- 탭 -->
+  <div class="cp-tabs cp-detail-tabs" id="detail-tabs">
+    <span class="cp-tab active" data-target="tab-synopsis">줄거리</span>
+    <span class="cp-tab" data-target="tab-cast">출연/제작진</span>
+    <span class="cp-tab" data-target="tab-reviews">리뷰 ({{ movie_reviews|length }})</span>
+    <span class="cp-tab" data-target="tab-related">추천 영화</span>
+  </div>
+
+
+<div class="cp-tab-panel active" id="tab-synopsis">
+  <div class="cp-synopsis-layout">
+
+    <div class="cp-synopsis-text">
+      <p>{{ movie.synopsis }}</p>
+    </div>
+
+    <div class="cp-rating-box">
+      
+      <div class="cp-watch-providers" style="margin-bottom: 28px; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px;">
+        <h4 class="cp-providers-title" style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 0 0 10px 0;">보러가기</h4>
+        <div class="cp-provider-list" style="display: flex; flex-wrap: wrap; gap: 10px;">
+          {% if movie.providers %}
+            {% for p in movie.providers %}
+            <a href="{{ p.url }}" target="_blank" class="cp-provider-item" title="{{ p.name }}으로 이동" style="display: flex; align-items: center; gap: 6px; background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 4px 10px; transition: transform 0.2s;">
+              <img src="{{ p.logo }}" alt="{{ p.name }} 로고" class="cp-provider-logo" style="width: 20px; height: 20px; border-radius: 4px;" />
+              <span class="cp-provider-name" style="font-size: 12px; color: var(--text-primary);">{{ p.name }}</span>
+            </a>
+            {% endfor %}
+          {% else %}
+            <p style="color: var(--text-muted); font-size: 12px; margin: 0;">제공되는 OTT 플랫폼 정보가 없습니다.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <h3 class="cp-rating-box__title">평점 &amp; 리뷰</h3>
+
+      <div class="cp-rating-box__summary">
+        <span class="cp-rating-big">{{ movie.rating }}</span>
+        <div>
+          <div class="cp-stars" style="font-size:18px; gap:3px;">
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star"></i>
+            <i class="fa-solid fa-star-half-stroke"></i>
+          </div>
+          <p class="cp-rating-count">({{ movie.rating_count }}명 참여)</p>
+        </div>
+      </div>
+
+      <ul class="cp-rating-bars">
+        {% for star in ['5', '4', '3', '2', '1'] %}
+        <li class="cp-rating-bar-row">
+          <span class="cp-rating-bar-label">{{ star }}점</span>
+          <div class="cp-rating-bar-track">
+            <div class="cp-rating-bar-fill" style="width: {{ movie.rating_dist[star] }}%"></div>
+          </div>
+          <span class="cp-rating-bar-pct">{{ movie.rating_dist[star] }}%</span>
+        </li>
+        {% endfor %}
+      </ul>
+
+
+    </div> </div>
+</div>
+
+  <!-- ─── 탭: 출연/제작진 ─── -->
+  <div class="cp-tab-panel" id="tab-cast">
+
+    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:20px;">주요 출연진</h3>
+    <div class="cp-cast-grid">
+      {% for c in movie.cast_list %}
+      <div class="cp-cast-card">
+        <img src="{{ c.img }}" alt="{{ c.name }}" class="cp-cast-card__img" />
+        <p class="cp-cast-card__name">{{ c.name }}</p>
+        <p class="cp-cast-card__role">{{ c.role }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin:36px 0 20px;">제작진</h3>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap:12px;">
+      {% for item in movie.crew %}
+      <div style="background:var(--bg-card); border:1px solid var(--border); border-radius:var(--radius-sm); padding:14px 16px;">
+        <p style="font-size:11px; color:var(--text-muted); margin-bottom:4px;">{{ item.role }}</p>
+        <p style="font-size:14px; font-weight:600; color:var(--text-primary);">{{ item.name }}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div><!-- /tab-cast -->
+
+
+  <!-- ─── 탭: 리뷰 ─── -->
+  <div class="cp-tab-panel" id="tab-reviews">
+
+    <!-- 리뷰 작성 폼 -->
+    <div class="cp-review-write" id="write-review">
+      <h3 class="cp-review-write__title">리뷰 작성</h3>
+
+      <div class="cp-star-select" data-selected="-1">
+        <i class="fa-regular fa-star"></i>
+        <i class="fa-regular fa-star"></i>
+        <i class="fa-regular fa-star"></i>
+        <i class="fa-regular fa-star"></i>
+        <i class="fa-regular fa-star"></i>
+      </div>
+
+      <textarea class="cp-review-textarea" placeholder="이 영화에 대한 생각을 자유롭게 남겨주세요..."></textarea>
+
+      <div class="cp-review-write__footer">
+        <button class="cp-btn cp-btn--primary" id="review-submit">
+          <i class="fa-solid fa-paper-plane"></i> 등록
+        </button>
+      </div>
+    </div>
+
+    <!-- 정렬 -->
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <p style="font-size:14px; color:var(--text-secondary);">
+        총 <strong style="color:var(--text-primary);">{{ movie_reviews|length }}</strong>개의 리뷰
+      </p>
+      <div class="cp-tabs" style="margin-bottom:0; border:none;">
+        <span class="cp-tab active" style="padding:4px 12px; font-size:12px;">최신순</span>
+      </div>
+    </div>
+
+    <!-- 리뷰 목록 -->
+    <div class="cp-review-list">
+      {% if movie_reviews %}
+        {% for r in movie_reviews %}
+        <div class="cp-review-item">
+          <div class="cp-review-item__header">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--accent-soft);
+                        border:2px solid var(--accent);display:flex;align-items:center;
+                        justify-content:center;font-weight:700;color:var(--accent);font-size:15px;
+                        flex-shrink:0;">
+              {{ r.author[0] }}
+            </div>
+            <div>
+              <p class="cp-review-item__user">{{ r.author }}</p>
+              <div class="cp-stars" style="font-size:12px; gap:2px;">
+                {% for i in range(5) %}
+                  <i class="fa-{% if i < r.stars %}solid{% else %}regular{% endif %} fa-star"></i>
+                {% endfor %}
+                <span style="color:var(--text-secondary); font-size:12px; margin-left:4px;">{{ r.stars }}.0</span>
+              </div>
+            </div>
+            <span class="cp-review-item__date">{{ r.date }}</span>
+            {% if session.user_id == r.user_id %}
+            <button onclick="deleteDetailReview('{{ r.id }}')"
+                    style="margin-left:auto;background:none;border:none;cursor:pointer;
+                           color:var(--text-muted);font-size:12px;">
+              <i class="fa-regular fa-trash-can"></i>
+            </button>
+            {% endif %}
+          </div>
+          <p class="cp-review-item__text">{{ r.text }}</p>
+          <div class="cp-review-item__footer">
+            <span class="cp-review-item__likes" data-liked="false">
+              <i class="fa-regular fa-thumbs-up"></i>
+              <span class="like-count">{{ r.likes }}</span>
+            </span>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div style="text-align:center;padding:48px 0;color:var(--text-muted);font-size:14px;">
+          <div style="font-size:36px;margin-bottom:12px;">✍️</div>
+          아직 리뷰가 없어요. 첫 번째 리뷰를 작성해보세요!
+        </div>
+      {% endif %}
+    </div>
+
+  </div><!-- /tab-reviews -->
+
+
+  <!-- ─── 탭: 추천 영화 ─── -->
+  <div class="cp-tab-panel" id="tab-related">
+
+    <h3 style="font-size:15px; font-weight:700; color:var(--text-primary); margin-bottom:20px;">
+      이 영화를 좋아하셨다면
+    </h3>
+
+    <div class="cp-related-grid">
+      {% for m in movie.related %}
+      <a href="/movie/{{ m.id }}" class="cp-related-card">
+        <img src="{{ m.poster }}" alt="{{ m.title }}" class="cp-movie-card__poster" loading="lazy" />
+        <div class="cp-movie-card__info">
+          <p class="cp-movie-card__title">{{ m.title }}</p>
+          <div class="cp-movie-card__rating">
+            <i class="fa-solid fa-star star-icon"></i>
+            <span>{{ m.rating }}</span>
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+
+  </div><!-- /tab-related -->
+
+</div><!-- /cp-detail-body -->
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/detail.js') }}"></script>
+<script>
+  const MOVIE_ID = {{ movie.id }};
+  const MOVIE_TITLE  = {{ movie.title | tojson }};
+  const MOVIE_POSTER = {{ movie.poster | tojson }};
+  const MOVIE_RATING = {{ movie.rating }};
+
+  // 페이지 로드 시 찜 상태 확인
+  (async () => {
+    {% if session.user_id %}
+    try {
+      const res  = await fetch(`/api/wishlist/${MOVIE_ID}`);
+      const data = await res.json();
+      if (data.wishlisted) setWishlisted(true);
+    } catch(e) {}
+    {% endif %}
+  })();
+
+  function setWishlisted(on) {
+    const btn  = document.getElementById('wishlist-btn');
+    const icon = document.getElementById('wishlist-icon');
+    const text = document.getElementById('wishlist-text');
+    if (on) {
+      btn.classList.add('active');
+      icon.className = 'fa-solid fa-heart';
+      icon.style.color = 'var(--accent)';
+      text.textContent = '찜 완료';
+    } else {
+      btn.classList.remove('active');
+      icon.className = 'fa-regular fa-heart';
+      icon.style.color = '';
+      text.textContent = '찜하기';
+    }
+  }
+
+  async function toggleWishlist() {
+    {% if not session.user_id %}
+      window.location.href = '/login'; return;
+    {% endif %}
+    try {
+      const res  = await fetch(`/api/wishlist/${MOVIE_ID}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          title:  MOVIE_TITLE,
+          poster: MOVIE_POSTER,
+          rating: MOVIE_RATING,
+        })
+      });
+      const data = await res.json();
+      setWishlisted(data.wishlisted);
+    } catch(e) {
+      alert('오류가 발생했어요. 다시 시도해 주세요.');
+    }
+  }
+
+  document.getElementById('review-submit').addEventListener('click', async () => {
+      const text = document.querySelector('.cp-review-textarea').value.trim();
+      if (!text) return;
+      const stars = parseInt(document.querySelector('.cp-star-select').dataset.selected ?? -1) + 1 || 5;
+
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          movie_id:     MOVIE_ID,
+          movie_title:  MOVIE_TITLE,
+          movie_poster: MOVIE_POSTER,
+          stars:        stars,
+          text:         text,
+        })
+      });
+      if (res.ok) { location.reload(); }
+      else { alert('로그인 후 리뷰를 작성할 수 있어요.'); }
+    });
+
+    async function deleteDetailReview(id) {
+      if (!confirm('리뷰를 삭제할까요?')) return;
+      const res = await fetch('/api/reviews/' + id, { method: 'DELETE' });
+      if (res.ok) { location.reload(); }
+    }
+</script>
+{% endblock %}

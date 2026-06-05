@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}CinePick{% endblock %}</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.1.0/mdb.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+  <style>
+    /* ── 네비 active 언더라인 수정 ──
+       navbar가 fixed + align-items:center 구조여서
+       border-bottom 대신 box-shadow로 처리해야 잘림 없이 표시됩니다 */
+    .cp-navbar__menu .cp-menu-link {
+      position: relative;
+      padding-bottom: 8px;
+    }
+    .cp-navbar__menu .cp-menu-link::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) scaleX(0);
+      width: calc(100% - 16px);
+      height: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+      transition: transform 0.2s ease;
+    }
+    .cp-navbar__menu .cp-menu-link:hover::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+    .cp-navbar__menu .cp-menu-link.active {
+      color: var(--text-primary);
+      border-bottom: none; /* style.css의 border-bottom 무효화 */
+    }
+    .cp-navbar__menu .cp-menu-link.active::after {
+      transform: translateX(-50%) scaleX(1);
+    }
+  </style>
+
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+  <nav class="cp-navbar">
+    <div class="cp-navbar__inner">
+
+      <a class="cp-navbar__logo" href="/">
+        <span class="cp-logo-icon">C</span>
+        <span class="cp-logo-text">CINEPICK</span>
+      </a>
+
+      <ul class="cp-navbar__menu">
+        <li><a href="/"          class="cp-menu-link {% if active_page == 'home'      %}active{% endif %}">홈</a></li>
+        <li><a href="/movies"    class="cp-menu-link {% if active_page == 'movies'    %}active{% endif %}">영화</a></li>
+        <li><a href="/reviews"   class="cp-menu-link {% if active_page == 'reviews'   %}active{% endif %}">리뷰</a></li>
+        <li><a href="/recommend" class="cp-menu-link {% if active_page == 'recommend' %}active{% endif %}">추천</a></li>
+        <li><a href="/ranking"   class="cp-menu-link {% if active_page == 'ranking'   %}active{% endif %}">랭킹</a></li>
+        <li><a href="/community" class="cp-menu-link {% if active_page == 'community' %}active{% endif %}">커뮤니티</a></li>
+      </ul>
+
+      <div class="cp-navbar__right">
+        <form class="cp-search-wrap" action="/movies" method="get">
+          <i class="fa-solid fa-magnifying-glass cp-search-icon"></i>
+          <input type="text" name="q" class="cp-search-input" placeholder="영화 제목 검색" />
+        </form>
+
+        {% if session.user_id %}
+          <!-- 알림 버튼 -->
+          <div style="position:relative;">
+            <button class="cp-icon-btn" id="notif-btn" onclick="toggleNotifPanel()">
+              <i class="fa-regular fa-bell"></i>
+              <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;
+                    width:16px;height:16px;background:var(--accent);border-radius:50%;
+                    font-size:10px;font-weight:700;color:#fff;
+                    display:none;align-items:center;justify-content:center;">0</span>
+            </button>
+
+            <!-- 알림 드롭다운 -->
+            <div id="notif-panel" style="display:none;position:absolute;top:48px;right:0;
+                 width:320px;background:var(--bg-card);border:1px solid var(--border);
+                 border-radius:var(--radius-lg);box-shadow:var(--shadow-hover);z-index:200;
+                 overflow:hidden;">
+              <div style="display:flex;align-items:center;justify-content:space-between;
+                          padding:14px 16px;border-bottom:1px solid var(--border);">
+                <span style="font-weight:700;font-size:14px;">알림</span>
+                <button onclick="readAllNotifs()"
+                        style="background:none;border:none;font-size:12px;
+                               color:var(--accent);cursor:pointer;font-family:var(--font-body);">
+                  모두 읽음
+                </button>
+              </div>
+              <div id="notif-list" style="max-height:360px;overflow-y:auto;">
+                <div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px;">
+                  알림이 없어요
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <a href="/mypage" class="cp-icon-btn"><i class="fa-regular fa-user"></i></a>
+          <a href="/logout" class="cp-menu-link" style="font-size:13px;color:var(--text-muted);">로그아웃</a>
+        {% else %}
+          <a href="/login" class="cp-btn cp-btn--primary" style="padding:6px 16px;font-size:13px;">로그인</a>
+        {% endif %}
+      </div>
+
+    </div>
+  </nav>
+
+  <main class="cp-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="cp-footer">
+    <p>© 2026 CinePick. All rights reserved. &nbsp;|&nbsp; 영화 데이터: <a href="https://www.themoviedb.org/" target="_blank" style="color:var(--accent);">TMDb</a></p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mdb-ui-kit/7.1.0/mdb.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+  {% block extra_js %}{% endblock %}
+
+  {% if session.user_id %}
+  <script>
+    // 알림 아이콘별 색상
+    const NOTIF_ICONS = {
+      'like_post':    '❤️',
+      'like_comment': '💬',
+      'comment':      '💬',
+      'reply':        '↩️',
+    };
+
+    // 알림 패널 토글
+    function toggleNotifPanel() {
+      const panel = document.getElementById('notif-panel');
+      const isOpen = panel.style.display === 'block';
+      panel.style.display = isOpen ? 'none' : 'block';
+      if (!isOpen) loadNotifs();
+    }
+
+    // 외부 클릭 시 닫기
+    document.addEventListener('click', e => {
+      const btn   = document.getElementById('notif-btn');
+      const panel = document.getElementById('notif-panel');
+      if (panel && !panel.contains(e.target) && !btn.contains(e.target)) {
+        panel.style.display = 'none';
+      }
+    });
+
+    // 알림 불러오기
+    async function loadNotifs() {
+      try {
+        const res  = await fetch('/api/notifications');
+        const data = await res.json();
+        const list  = document.getElementById('notif-list');
+        const badge = document.getElementById('notif-badge');
+
+        // 배지 업데이트
+        if (data.unread > 0) {
+          badge.style.display = 'flex';
+          badge.textContent   = data.unread > 9 ? '9+' : data.unread;
+        } else {
+          badge.style.display = 'none';
+        }
+
+        if (!data.notifications.length) {
+          list.innerHTML = '<div style="padding:32px;text-align:center;color:var(--text-muted);font-size:13px;">알림이 없어요</div>';
+          return;
+        }
+
+        list.innerHTML = data.notifications.map(n => `
+          <div onclick="clickNotif('${n.id}', '${n.link}')"
+               style="padding:14px 16px;border-bottom:1px solid var(--border);cursor:pointer;
+                      background:${n.read ? 'transparent' : 'rgba(229,9,20,0.05)'};
+                      transition:background 0.2s;"
+               onmouseover="this.style.background='var(--bg-hover)'"
+               onmouseout="this.style.background='${n.read ? 'transparent' : 'rgba(229,9,20,0.05)'}'">
+            <div style="display:flex;align-items:flex-start;gap:10px;">
+              <span style="font-size:18px;flex-shrink:0;">${NOTIF_ICONS[n.type] || '🔔'}</span>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;color:var(--text-primary);line-height:1.5;
+                            ${n.read ? '' : 'font-weight:600;'}">${n.message}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:3px;">${n.date}</div>
+              </div>
+              ${!n.read ? '<span style="width:7px;height:7px;background:var(--accent);border-radius:50%;flex-shrink:0;margin-top:4px;"></span>' : ''}
+            </div>
+          </div>
+        `).join('');
+      } catch(e) {
+        console.error(e);
+      }
+    }
+
+    // 알림 클릭 (읽음 처리 + 이동)
+    async function clickNotif(id, link) {
+      await fetch(`/api/notifications/${id}/read`, { method: 'POST' });
+      document.getElementById('notif-panel').style.display = 'none';
+      window.location.href = link;
+    }
+
+    // 모두 읽음
+    async function readAllNotifs() {
+      await fetch('/api/notifications/read-all', { method: 'POST' });
+      document.getElementById('notif-badge').style.display = 'none';
+      loadNotifs();
+    }
+
+    // 페이지 로드 시 배지 업데이트
+    (async () => {
+      try {
+        const res  = await fetch('/api/notifications');
+        const data = await res.json();
+        const badge = document.getElementById('notif-badge');
+        if (data.unread > 0) {
+          badge.style.display = 'flex';
+          badge.textContent   = data.unread > 9 ? '9+' : data.unread;
+        }
+      } catch(e) {}
+    })();
+  </script>
+  {% endif %}
+
+</body>
+</html>

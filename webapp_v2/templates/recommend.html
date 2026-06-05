@@ -1,0 +1,325 @@
+{% extends "layout.html" %}
+{% set active_page = 'recommend' %}
+
+{% block title %}AI 추천 — CinePick{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<style>
+/* ── 추천 히어로 ── */
+.cp-recommend-hero {
+  position: relative;
+  padding: 64px 0 52px;
+  text-align: center;
+  overflow: hidden;
+  border-bottom: 1px solid var(--border);
+}
+.cp-recommend-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 70% 70% at 50% -10%,
+    rgba(229,9,20,0.14) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cp-recommend-hero__title {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 42px;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+  position: relative;
+}
+.cp-recommend-hero__title span { color: var(--accent); }
+.cp-recommend-hero__sub {
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+/* ── 입력 폼 ── */
+.cp-rec-form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+}
+.cp-genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.cp-genre-chip {
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.cp-genre-chip:hover,
+.cp-genre-chip.selected {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.cp-keyword-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+}
+.cp-keyword-input {
+  flex: 1;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.cp-keyword-input:focus { border-color: var(--accent); }
+.cp-keyword-input::placeholder { color: var(--text-muted); }
+
+/* ── 결과 영역 ── */
+.cp-rec-body {
+  padding: 48px 0;
+}
+.cp-rec-loading {
+  display: none;
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-muted);
+}
+.cp-rec-loading.show { display: block; }
+.cp-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: cpSpin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes cpSpin { to { transform: rotate(360deg); } }
+
+.cp-rec-result { display: none; }
+.cp-rec-result.show { display: block; }
+
+.cp-rec-intro {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+.cp-rec-intro strong { color: var(--text-primary); }
+
+/* 추천 영화 그리드 — 기존 cp-related-grid 확장 */
+.cp-rec-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+}
+@media (max-width: 1024px) { .cp-rec-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (max-width: 768px)  { .cp-rec-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 480px)  { .cp-rec-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.cp-rec-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+}
+.cp-rec-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: var(--shadow-hover);
+  border-color: var(--border-light);
+}
+.cp-rec-card__poster {
+  width: 100%; aspect-ratio: 2/3;
+  object-fit: cover; display: block;
+  background: var(--bg-secondary);
+}
+.cp-rec-card__body { padding: 12px; }
+.cp-rec-card__title {
+  font-size: 13px; font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cp-rec-card__year {
+  font-size: 12px; color: var(--text-muted); margin-bottom: 6px;
+}
+.cp-rec-card__reason {
+  font-size: 12px; color: var(--text-secondary); line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cp-rec-error {
+  display: none;
+  text-align: center;
+  padding: 40px;
+  color: var(--accent);
+  font-size: 14px;
+}
+.cp-rec-error.show { display: block; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- 히어로 + 입력 폼 -->
+<div class="cp-recommend-hero">
+  <div class="cp-container">
+    <h1 class="cp-recommend-hero__title">AI <span>영화</span> 추천</h1>
+    <p class="cp-recommend-hero__sub">원하는 장르나 키워드를 입력하면 Gemini가 딱 맞는 영화를 골라드립니다</p>
+
+    <div class="cp-rec-form">
+      <div class="cp-genre-chips" id="genreChips">
+        <button class="cp-genre-chip" data-genre="액션">🔥 액션</button>
+        <button class="cp-genre-chip" data-genre="SF">🚀 SF</button>
+        <button class="cp-genre-chip" data-genre="드라마">🎭 드라마</button>
+        <button class="cp-genre-chip" data-genre="코미디">😄 코미디</button>
+        <button class="cp-genre-chip" data-genre="공포">👻 공포</button>
+        <button class="cp-genre-chip" data-genre="로맨스">💕 로맨스</button>
+        <button class="cp-genre-chip" data-genre="애니메이션">✨ 애니메이션</button>
+        <button class="cp-genre-chip" data-genre="범죄/스릴러">🕵️ 범죄/스릴러</button>
+      </div>
+      <div class="cp-keyword-row">
+        <input class="cp-keyword-input" id="keywordInput"
+               placeholder="예: 우주 탐험, 시간여행, 가족 감동, 반전 있는 영화..." />
+        <button class="cp-btn cp-btn--primary" id="recommendBtn" onclick="getRecommendations()">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> 추천 받기
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 결과 -->
+<section class="cp-rec-body">
+  <div class="cp-container">
+    <div class="cp-rec-loading" id="recLoading">
+      <div class="cp-spinner"></div>
+      <p>Gemini가 영화를 분석하고 있어요...</p>
+    </div>
+    <div class="cp-rec-error" id="recError">
+      <i class="fa-solid fa-circle-exclamation" style="font-size:24px;margin-bottom:10px;display:block;"></i>
+      추천을 불러오는 데 실패했습니다. 잠시 후 다시 시도해 주세요.
+    </div>
+    <div class="cp-rec-result" id="recResult"></div>
+  </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // ── 장르 칩 선택 ──
+  let selectedGenres = [];
+  document.querySelectorAll('.cp-genre-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const g = chip.dataset.genre;
+      if (chip.classList.contains('selected')) {
+        chip.classList.remove('selected');
+        selectedGenres = selectedGenres.filter(x => x !== g);
+      } else {
+        chip.classList.add('selected');
+        selectedGenres.push(g);
+      }
+    });
+  });
+
+  // ── Enter 키 ──
+  document.getElementById('keywordInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') getRecommendations();
+  });
+
+  async function getRecommendations() {
+    const keyword = document.getElementById('keywordInput').value.trim();
+    const prompt  = [...selectedGenres, keyword].filter(Boolean).join(' / ');
+    if (!prompt) { alert('장르를 선택하거나 키워드를 입력해 주세요.'); return; }
+
+    const btn = document.getElementById('recommendBtn');
+    btn.disabled = true;
+    document.getElementById('recLoading').classList.add('show');
+    document.getElementById('recResult').classList.remove('show');
+    document.getElementById('recError').classList.remove('show');
+
+    try {
+      const res = await fetch('/api/recommend/gemini', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+      if (!res.ok) throw new Error();
+      const data = await res.json();
+      renderResult(data, prompt);
+    } catch {
+      document.getElementById('recError').classList.add('show');
+    } finally {
+      document.getElementById('recLoading').classList.remove('show');
+      btn.disabled = false;
+    }
+  }
+
+  function renderResult(data, prompt) {
+    const movies = data.movies || [];
+    const el = document.getElementById('recResult');
+
+    if (!movies.length) {
+      el.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:40px">추천 결과가 없습니다.</p>';
+      el.classList.add('show');
+      return;
+    }
+
+    const cards = movies.filter(m => m.poster).map(m => `
+      ${m.id ? `<a href="/movie/${m.id}" class="cp-rec-card" style="text-decoration:none;">` : '<div class="cp-rec-card">'}
+        <img class="cp-rec-card__poster"
+             src="${m.poster || 'https://placehold.co/200x300/1a1a1a/666?text=No+Poster'}"
+             alt="${m.title}"
+             onerror="this.src='https://placehold.co/200x300/1a1a1a/666?text=No+Poster'" />
+        <div class="cp-rec-card__body">
+          <div class="cp-rec-card__title">${m.title}</div>
+          <div class="cp-rec-card__year">
+            ${m.year ? m.year : ''}
+            ${m.rating ? ' &nbsp;·&nbsp; <i class="fa-solid fa-star" style="color:var(--star);font-size:11px;"></i> ' + m.rating : ''}
+          </div>
+          <div class="cp-rec-card__reason">${m.reason || ''}</div>
+        </div>
+      ${m.id ? '</a>' : '</div>'}
+    `).join('');
+
+    el.innerHTML = `
+      <div class="cp-rec-intro">
+        <strong><i class="fa-solid fa-wand-magic-sparkles" style="color:var(--accent);margin-right:6px;"></i>Gemini 추천 결과</strong>
+        &nbsp;—&nbsp; "<em>${prompt}</em>"<br/>
+        ${data.intro || '요청하신 조건에 맞는 영화를 골랐습니다. 즐거운 감상 되세요!'}
+      </div>
+      <div class="cp-section-header" style="margin-bottom:16px;">
+        <h2 class="cp-section-title">추천 영화 <span style="color:var(--accent);">${movies.length}</span>편</h2>
+      </div>
+      <div class="cp-rec-grid">${cards}</div>
+    `;
+    el.classList.add('show');
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+</script>
+{% endblock %}
