@@ -333,7 +333,7 @@
       const data = await res.json();
       setWishlisted(data.wishlisted);
     } catch(e) {
-      alert('오류가 발생했어요. 다시 시도해 주세요.');
+      console.error(e);
     }
   }
 
