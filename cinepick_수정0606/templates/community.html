@@ -1,0 +1,330 @@
+{% extends "layout.html" %}
+{% set active_page = 'community' %}
+
+{% block title %}커뮤니티 — CinePick{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<style>
+.cp-community-hero {
+  padding: 48px 0 36px;
+  border-bottom: 1px solid var(--border);
+}
+.cp-community-hero__title {
+  font-family: var(--font-body); font-weight: 700;
+  font-size: 36px; letter-spacing: -0.5px; margin-bottom: 6px;
+}
+.cp-seg-tabs {
+  display: flex; border: 1px solid var(--border);
+  border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 24px;
+}
+.cp-seg-tab {
+  flex: 1; padding: 10px; text-align: center;
+  font-size: 13px; font-weight: 500;
+  border: none; background: var(--bg-card);
+  color: var(--text-muted); cursor: pointer;
+  border-right: 1px solid var(--border);
+  transition: all 0.2s; font-family: var(--font-body);
+  text-decoration: none; display: block;
+}
+.cp-seg-tab:last-child { border-right: none; }
+.cp-seg-tab.active { background: var(--accent); color: #fff; }
+.cp-seg-tab:hover:not(.active) { background: var(--bg-hover); color: var(--text-primary); }
+.cp-notice {
+  background: rgba(229,9,20,0.07); border: 1px solid rgba(229,9,20,0.25);
+  border-radius: var(--radius-sm); padding: 13px 16px; margin-bottom: 14px;
+  display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted);
+}
+.cp-notice strong { color: var(--text-primary); }
+.cp-post-item {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 18px 20px; margin-bottom: 10px;
+  display: flex; gap: 16px; align-items: flex-start;
+  cursor: pointer; text-decoration: none;
+  transition: border-color 0.2s, background 0.2s;
+}
+.cp-post-item:hover { border-color: var(--border-light); background: var(--bg-hover); }
+.cp-post-thumb { width: 70px; height: 70px; border-radius: var(--radius-sm); object-fit: cover; background: var(--bg-secondary); flex-shrink: 0; }
+.cp-post-body { flex: 1; min-width: 0; }
+.cp-post-cat { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--accent); margin-bottom: 4px; }
+.cp-post-title { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-post-preview { font-size: 13px; color: var(--text-muted); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.cp-post-foot { display: flex; align-items: center; gap: 14px; margin-top: 10px; font-size: 12px; color: var(--text-muted); }
+.cp-mini-avatar { width: 20px; height: 20px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
+.cp-community-layout { display: grid; grid-template-columns: 1fr 290px; gap: 40px; align-items: start; padding: 40px 0; }
+@media (max-width: 900px) { .cp-community-layout { grid-template-columns: 1fr; } }
+.cp-sidebar-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; }
+.cp-sidebar-box h3 { font-family: var(--font-body); font-weight: 700; font-size: 15px; margin-bottom: 16px; color: var(--accent); }
+.cp-trend-tag { display: inline-block; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 20px; padding: 5px 13px; font-size: 12px; color: var(--text-muted); margin: 0 4px 8px 0; cursor: pointer; transition: all 0.2s; }
+.cp-trend-tag:hover { border-color: var(--accent); color: var(--accent); }
+.cp-pagination { display: flex; justify-content: center; gap: 6px; margin-top: 24px; }
+.cp-page-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); border: 1px solid var(--border); background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
+.cp-page-btn.active, .cp-page-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="cp-community-hero">
+  <div class="cp-container">
+    <h1 class="cp-community-hero__title">커뮤니티</h1>
+    <p style="color:var(--text-muted);font-size:14px;">영화 팬들과 함께 이야기를 나눠보세요</p>
+  </div>
+</div>
+
+<div class="cp-container">
+  <div class="cp-community-layout">
+
+    <div>
+      <div class="cp-notice">
+        <span>📢</span>
+        <span><strong>[공지]</strong> 커뮤니티 이용 규칙 안내 — 스포일러는 태그를 달아주세요!</span>
+        <span style="font-size:12px;margin-left:auto;flex-shrink:0;">2025.05.01</span>
+      </div>
+
+      <div class="cp-seg-tabs">
+        <button class="cp-seg-tab active" onclick="filterPosts(this,'전체')">전체</button>
+        <button class="cp-seg-tab" onclick="filterPosts(this,'영화 토론')">영화 토론</button>
+        <button class="cp-seg-tab" onclick="filterPosts(this,'추천')">추천</button>
+        <button class="cp-seg-tab" onclick="filterPosts(this,'소식')">소식</button>
+        <button class="cp-seg-tab" onclick="filterPosts(this,'잡담')">잡담</button>
+      </div>
+
+      {% for p in db_posts %}
+      <a class="cp-post-item" data-cat="{{ p.cat }}" href="{% if p.id %}/community/{{ p.id }}{% else %}#{% endif %}">
+        <img class="cp-post-thumb" src="{{ p.movie_poster if p.get('movie_poster') else p.img }}" alt="{{ p.title }}"
+             onerror="this.src='https://placehold.co/70x70/1a1a1a/555?text=?'" />
+        <div class="cp-post-body">
+          <div class="cp-post-cat">{{ p.cat }}</div>
+          <div class="cp-post-title">{{ p.title }}</div>
+          <div class="cp-post-preview">{{ p.preview }}</div>
+          <div class="cp-post-foot">
+            <span style="display:flex;align-items:center;gap:5px;">
+              <span class="cp-mini-avatar">{{ p.author[0] }}</span> {{ p.author }}
+            </span>
+            <span>{{ p.date }}</span>
+            <span><i class="fa-regular fa-eye"></i> {{ p.views }}</span>
+            <span><i class="fa-regular fa-comment"></i> {{ p.comments }}</span>
+            <span><i class="fa-regular fa-heart"></i> {{ p.likes }}</span>
+            {% if p.id and current_user == p.author %}
+            <span onclick="deletePost('{{ p.id }}', event)"
+                  style="color:var(--accent);cursor:pointer;margin-left:auto;">
+              <i class="fa-regular fa-trash-can"></i>
+            </span>
+            {% endif %}
+          </div>
+        </div>
+      </a>
+      {% else %}
+      <div style="text-align:center;padding:60px 0;color:var(--text-muted);font-size:14px;">
+        <div style="font-size:36px;margin-bottom:12px;">✍️</div>
+        아직 글이 없어요. 첫 번째 글을 작성해보세요!
+      </div>
+      {% endfor %}
+
+
+    </div>
+
+    <aside>
+      {% if session.user_id %}
+      <button class="cp-btn cp-btn--primary" style="width:100%;margin-bottom:20px;"
+              onclick="document.getElementById('postModal').style.display='flex'">
+        <i class="fa-solid fa-pen"></i> 글 작성하기
+      </button>
+      {% else %}
+      <a href="/login" class="cp-btn cp-btn--primary" style="width:100%;margin-bottom:20px;justify-content:center;">
+        <i class="fa-solid fa-pen"></i> 로그인 후 작성하기
+      </a>
+      {% endif %}
+
+      <div class="cp-sidebar-box">
+        <h3>🔥 트렌딩 태그</h3>
+        {% for tag in ['#듄파트2','#인터스텔라','#놀란','#마블','#픽사','#SF추천','#혼영','#재개봉','#어벤져스5','#애니'] %}
+        <span class="cp-trend-tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+
+      <div class="cp-sidebar-box">
+        <h3>📊 오늘의 통계</h3>
+        {% for label, val in [('새 게시글','247'),('댓글','1,089'),('신규 회원','34'),('방문자','12,847')] %}
+        <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;">
+          <span style="color:var(--text-muted);">{{ label }}</span>
+          <span style="font-weight:700;">{{ val }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- 글 작성 모달 -->
+<div id="postModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+     z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);
+              padding:32px;width:90%;max-width:520px;position:relative;">
+    <button onclick="document.getElementById('postModal').style.display='none'"
+            style="position:absolute;top:16px;right:16px;background:none;border:none;
+                   color:var(--text-muted);font-size:20px;cursor:pointer;">✕</button>
+    <h3 style="font-weight:700;font-size:18px;margin-bottom:20px;">글 작성</h3>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">카테고리</label>
+      <select id="post-cat"
+              style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);
+                     border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-primary);
+                     font-size:14px;outline:none;font-family:var(--font-body);">
+        <option value="영화 토론">영화 토론</option>
+        <option value="추천">추천</option>
+        <option value="소식">소식</option>
+        <option value="잡담" selected>잡담</option>
+      </select>
+    </div>
+
+    <div id="post-movie-wrap" style="display:none;margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">관련 영화 (선택)</label>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div id="post-poster-wrap" style="flex-shrink:0;width:52px;height:78px;background:var(--bg-secondary);
+             border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;
+             display:flex;align-items:center;justify-content:center;">
+          <img id="post-poster-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
+          <span id="post-poster-placeholder" style="font-size:18px;">🎬</span>
+        </div>
+        <div style="flex:1;">
+          <input id="post-movie" type="text"
+                 style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);
+                        border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-primary);
+                        font-size:14px;outline:none;font-family:var(--font-body);margin-bottom:4px;"
+                 placeholder="영화 제목 검색..." />
+          <div id="post-search-result" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+      </div>
+      <input type="hidden" id="post-poster-url" />
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">제목</label>
+      <input id="post-title" type="text"
+             style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);
+                    border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-primary);
+                    font-size:14px;outline:none;font-family:var(--font-body);"
+             placeholder="제목을 입력하세요" />
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">내용</label>
+      <textarea id="post-content" rows="6"
+                style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);
+                       border-radius:var(--radius-sm);padding:12px;color:var(--text-primary);
+                       font-size:14px;resize:vertical;outline:none;font-family:var(--font-body);"
+                placeholder="자유롭게 이야기해 주세요..."></textarea>
+    </div>
+
+    <button onclick="submitPost()"
+            class="cp-btn cp-btn--primary" style="width:100%;padding:12px;font-size:14px;">
+      <i class="fa-solid fa-paper-plane"></i> 등록
+    </button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function filterPosts(el, cat) {
+    document.querySelectorAll('.cp-seg-tab').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+    document.querySelectorAll('.cp-post-item').forEach(post => {
+      post.style.display = (cat === '전체' || post.dataset.cat === cat) ? 'flex' : 'none';
+    });
+  }
+
+  document.getElementById('post-cat').addEventListener('change', function() {
+    const show = ['영화 토론', '추천'].includes(this.value);
+    document.getElementById('post-movie-wrap').style.display = show ? 'block' : 'none';
+    if (!show) {
+      document.getElementById('post-movie').value = '';
+      document.getElementById('post-poster-url').value = '';
+      document.getElementById('post-poster-img').style.display = 'none';
+      document.getElementById('post-poster-placeholder').style.display = 'block';
+      document.getElementById('post-search-result').textContent = '';
+    }
+  });
+
+  let postSearchTimer = null;
+  document.getElementById('post-movie').addEventListener('input', function() {
+    clearTimeout(postSearchTimer);
+    const q = this.value.trim();
+    if (!q) {
+      document.getElementById('post-poster-img').style.display = 'none';
+      document.getElementById('post-poster-placeholder').style.display = 'block';
+      document.getElementById('post-poster-url').value = '';
+      document.getElementById('post-search-result').textContent = '';
+      return;
+    }
+    postSearchTimer = setTimeout(async () => {
+      document.getElementById('post-search-result').textContent = '검색 중...';
+      try {
+        const res = await fetch('/api/movies/search?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        const movies = data.results || [];
+        if (movies.length > 0) {
+          const m = movies[0];
+          const poster = m.poster || '';
+          document.getElementById('post-poster-url').value = poster;
+          if (poster) {
+            document.getElementById('post-poster-img').src = poster;
+            document.getElementById('post-poster-img').style.display = 'block';
+            document.getElementById('post-poster-placeholder').style.display = 'none';
+          }
+          document.getElementById('post-search-result').innerHTML =
+            '<span style="color:var(--accent);">✓</span> ' + m.title;
+        } else {
+          document.getElementById('post-search-result').textContent = '검색 결과 없음';
+        }
+      } catch(e) {
+        document.getElementById('post-search-result').textContent = '';
+      }
+    }, 600);
+  });
+
+  async function deletePost(id, e) {
+    e.preventDefault();
+    if (!confirm('이 글을 삭제할까요?')) return;
+    const res = await fetch('/api/posts/' + id, { method: 'DELETE' });
+    if (res.ok) { location.reload(); }
+    else { alert('삭제 실패. 다시 시도해 주세요.'); }
+  }
+
+  async function submitPost() {
+    const title   = document.getElementById('post-title').value.trim();
+    const content = document.getElementById('post-content').value.trim();
+    const cat     = document.getElementById('post-cat').value;
+    if (!title)   { alert('제목을 입력해 주세요.'); return; }
+    if (!content) { alert('내용을 입력해 주세요.'); return; }
+
+    const moviePoster = document.getElementById('post-poster-url').value;
+    const movieTitle  = document.getElementById('post-movie').value.trim();
+    const res = await fetch('/api/posts', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ title, content, category: cat, movie_poster: moviePoster, movie_title: movieTitle })
+    });
+    if (res.ok) {
+      alert('글이 등록됐습니다!');
+      document.getElementById('postModal').style.display = 'none';
+      document.getElementById('post-movie').value = '';
+      document.getElementById('post-poster-url').value = '';
+      document.getElementById('post-poster-img').style.display = 'none';
+      document.getElementById('post-poster-placeholder').style.display = 'block';
+      document.getElementById('post-search-result').textContent = '';
+      document.getElementById('post-movie-wrap').style.display = 'none';
+      document.getElementById('post-title').value = '';
+      document.getElementById('post-content').value = '';
+      location.reload();
+    } else {
+      alert('등록 실패. 다시 시도해 주세요.');
+    }
+  }
+</script>
+{% endblock %}

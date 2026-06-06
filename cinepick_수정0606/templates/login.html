@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+{% set active_page = 'login' %}
+
+{% block title %}CinePick — 로그인{% endblock %}
+
+{% block extra_css %}
+<style>
+  .cp-login-container {
+    max-width: 400px; margin: 80px auto; padding: 40px 30px;
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-hover);
+  }
+  .cp-login-title {
+    font-family: var(--font-body); font-weight: 700; font-size: 28px;
+    color: var(--text-primary); text-align: center; margin-bottom: 30px;
+  }
+  .cp-form-group { margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
+  .cp-form-label { font-size: 13px; color: var(--text-secondary); }
+  .cp-form-input {
+    width: 100%; background: var(--bg-secondary); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px 14px;
+    color: var(--text-primary); font-size: 14px; outline: none;
+    transition: border-color 0.2s; font-family: var(--font-body);
+  }
+  .cp-form-input:focus { border-color: var(--accent); }
+  .cp-flash-msg {
+    background: rgba(229,9,20,0.1); border: 1px solid var(--accent);
+    color: var(--text-primary); padding: 10px; border-radius: var(--radius-sm);
+    font-size: 13px; margin-bottom: 20px; text-align: center;
+  }
+  .cp-success-msg {
+    background: rgba(0,200,100,0.1); border: 1px solid #00c864;
+    color: #00c864; padding: 10px; border-radius: var(--radius-sm);
+    font-size: 13px; margin-bottom: 20px; text-align: center;
+  }
+  .cp-login-footer { margin-top: 24px; text-align: center; font-size: 13px; color: var(--text-muted); }
+  .cp-login-footer a { color: var(--accent); margin-left: 6px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="cp-container">
+  <div class="cp-login-container">
+    <h2 class="cp-login-title">로그인</h2>
+
+    {% if registered %}
+    <div class="cp-success-msg"><i class="fa-solid fa-circle-check"></i> 가입 완료! 로그인해 주세요.</div>
+    {% endif %}
+    {% if error %}
+    <div class="cp-flash-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ error }}</div>
+    {% endif %}
+
+    <form action="/login" method="POST">
+      <div class="cp-form-group">
+        <label class="cp-form-label">이메일 주소</label>
+        <input type="email" name="email" class="cp-form-input" placeholder="example@cinepick.com" required autocomplete="username" />
+      </div>
+      <div class="cp-form-group">
+        <label class="cp-form-label">비밀번호</label>
+        <input type="password" name="password" class="cp-form-input" placeholder="비밀번호를 입력하세요" required autocomplete="current-password" />
+      </div>
+      <button type="submit" class="cp-btn cp-btn--primary" style="width:100%;padding:12px;font-size:14px;margin-top:10px;">
+        로그인
+      </button>
+    </form>
+
+    <div class="cp-login-footer">
+      CinePick 회원이 아니신가요? <a href="/register">지금 가입하세요</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

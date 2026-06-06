@@ -1,0 +1,392 @@
+{% extends "layout.html" %}
+{% set active_page = 'reviews' %}
+
+{% block title %}리뷰 — CinePick{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}" />
+<style>
+.cp-reviews-hero {
+  padding: 48px 0 36px;
+  border-bottom: 1px solid var(--border);
+}
+.cp-reviews-hero__title {
+  font-family: var(--font-body); font-weight: 700;
+  font-size: 36px; letter-spacing: -0.5px; margin-bottom: 6px;
+}
+.cp-reviews-hero__title span { color: var(--accent); }
+.cp-filter-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 24px; }
+.cp-filter-chip {
+  padding: 6px 16px; border-radius: 20px; font-size: 13px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-muted); cursor: pointer;
+  transition: all 0.2s; font-family: var(--font-body);
+  text-decoration: none; display: inline-block;
+}
+.cp-filter-chip.active,
+.cp-filter-chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.cp-rv-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-md); padding: 22px; margin-bottom: 14px; transition: border-color 0.2s;
+}
+.cp-rv-card:hover { border-color: var(--border-light); }
+.cp-rv-movie-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+.cp-rv-poster { width: 48px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); flex-shrink: 0; background: var(--bg-secondary); }
+.cp-rv-movie-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+.cp-rv-stars { display: flex; align-items: center; gap: 4px; font-size: 12px; }
+.cp-rv-stars i { color: var(--star); font-size: 12px; }
+.cp-rv-author-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.cp-rv-avatar {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--accent-soft); border: 1px solid var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--accent); flex-shrink: 0;
+}
+.cp-rv-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.cp-rv-date { font-size: 12px; color: var(--text-muted); margin-left: auto; }
+.cp-rv-text {
+  font-size: 14px; color: var(--text-secondary); line-height: 1.8;
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.cp-rv-text.expanded { -webkit-line-clamp: unset; }
+.cp-rv-footer { margin-top: 14px; display: flex; align-items: center; justify-content: space-between; }
+.cp-rv-likes {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--text-muted); cursor: pointer;
+  padding: 5px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.cp-rv-likes:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.cp-rv-expand { font-size: 12px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: var(--font-body); }
+.cp-reviews-layout {
+  display: grid; grid-template-columns: 1fr 300px; gap: 40px; align-items: start; padding: 40px 0;
+}
+@media (max-width: 900px) { .cp-reviews-layout { grid-template-columns: 1fr; } }
+.cp-sidebar-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; margin-bottom: 20px; }
+.cp-sidebar-box h3 { font-family: var(--font-body); font-weight: 700; font-size: 15px; margin-bottom: 16px; color: var(--accent); }
+.cp-hot-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.cp-hot-item:last-child { border-bottom: none; }
+.cp-hot-rank { font-family: var(--font-body); font-weight: 700; font-size: 16px; color: var(--accent); width: 24px; text-align: center; flex-shrink: 0; }
+.cp-hot-poster { width: 36px; height: 54px; object-fit: cover; border-radius: 4px; background: var(--bg-secondary); }
+.cp-hot-title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cp-hot-count { font-size: 11px; color: var(--text-muted); }
+.cp-pagination { display: flex; justify-content: center; gap: 6px; margin-top: 28px; }
+.cp-page-btn {
+  width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--bg-card); color: var(--text-muted); font-size: 13px; cursor: pointer; transition: all 0.2s; text-decoration: none;
+}
+.cp-page-btn.active,
+.cp-page-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="cp-reviews-hero">
+  <div class="cp-container">
+    <h1 class="cp-reviews-hero__title">영화 <span>리뷰</span></h1>
+    <p style="color:var(--text-muted);font-size:14px;">CinePick 회원들의 생생한 관람 후기를 만나보세요</p>
+  </div>
+</div>
+
+<div class="cp-container">
+  <div class="cp-reviews-layout">
+
+    <div>
+
+
+      {% for r in db_reviews %}
+      <div class="cp-rv-card" data-genre="{{ r.genre }}">
+        <div class="cp-rv-movie-row">
+          <img class="cp-rv-poster" src="{{ r.poster }}" alt="{{ r.movie }}"
+               onerror="this.src='https://placehold.co/48x72/1a1a1a/666?text=?'" />
+          <div style="flex:1;min-width:0;">
+            <div class="cp-rv-movie-title">{{ r.movie }}</div>
+            <div class="cp-rv-stars">
+              {% for i in range(5) %}
+                <i class="fa-{% if i < r.stars %}solid{% else %}regular{% endif %} fa-star"></i>
+              {% endfor %}
+              <span style="color:var(--text-muted);margin-left:4px;">{{ r.stars }}.0</span>
+              <span class="cp-tag" style="margin-left:8px;">{{ r.genre }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="cp-rv-author-row">
+          <div class="cp-rv-avatar">{{ r.author[0] }}</div>
+          <span class="cp-rv-name">{{ r.author }}</span>
+          <span class="cp-rv-date">{{ r.date }}</span>
+        </div>
+        <div class="cp-rv-text" id="rvt-{{ loop.index }}">{{ r.text }}</div>
+        <div class="cp-rv-footer">
+          <span class="cp-rv-likes" onclick="toggleRvLike(this)">
+            <i class="fa-regular fa-thumbs-up"></i>
+            <span class="lc">{{ r.likes }}</span>
+          </span>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="cp-rv-expand" onclick="toggleRvExpand('rvt-{{ loop.index }}', this)">더 보기</button>
+            {% if r.id and current_user == r.author %}
+            <button class="cp-rv-expand" style="color:var(--accent);"
+                    onclick="deleteReview('{{ r.id }}')">삭제</button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <div style="text-align:center;padding:60px 0;color:var(--text-muted);font-size:14px;">
+        <div style="font-size:36px;margin-bottom:12px;">✍️</div>
+        아직 리뷰가 없어요. 첫 번째 리뷰를 작성해보세요!
+      </div>
+      {% endfor %}
+
+      <div class="cp-pagination">
+        {% if page > 1 %}
+        <a href="/reviews?page={{ page - 1 }}" class="cp-page-btn">‹</a>
+        {% endif %}
+        {% for p in range(1, total_pages + 1) %}
+          {% if p == page %}
+          <a href="/reviews?page={{ p }}" class="cp-page-btn active">{{ p }}</a>
+          {% elif p <= 3 or p > total_pages - 2 or (p >= page - 1 and p <= page + 1) %}
+          <a href="/reviews?page={{ p }}" class="cp-page-btn">{{ p }}</a>
+          {% elif p == 4 or p == total_pages - 2 %}
+          <span class="cp-page-btn" style="cursor:default;">...</span>
+          {% endif %}
+        {% endfor %}
+        {% if page < total_pages %}
+        <a href="/reviews?page={{ page + 1 }}" class="cp-page-btn">›</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <aside>
+      {% if session.user_id %}
+      <button class="cp-btn cp-btn--primary" style="width:100%;margin-bottom:20px;"
+              onclick="document.getElementById('reviewModal').style.display='flex'">
+        <i class="fa-solid fa-pen"></i> 리뷰 작성하기
+      </button>
+      {% else %}
+      <a href="/login" class="cp-btn cp-btn--primary" style="width:100%;margin-bottom:20px;justify-content:center;">
+        <i class="fa-solid fa-pen"></i> 로그인 후 작성하기
+      </a>
+      {% endif %}
+
+      <div class="cp-sidebar-box">
+        <h3>🔥 리뷰 많은 영화</h3>
+        {% for title, poster, count in [
+          ("인터스텔라",      "https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg", "리뷰 1,204개"),
+          ("인셉션",          "https://image.tmdb.org/t/p/w200/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg", "리뷰 1,088개"),
+          ("듄: 파트 2",      "https://image.tmdb.org/t/p/w200/8b8R8l88Qje9dn9OE8PY05Nxl1X.jpg", "리뷰 842개"),
+          ("데드풀과 울버린",  "https://image.tmdb.org/t/p/w200/8cdWjvZQUExUUTzyp4t6EDMubfO.jpg", "리뷰 617개"),
+          ("인사이드 아웃 2",  "https://image.tmdb.org/t/p/w200/vpnVM9B6NMmQpWeZvzLvDESb2QY.jpg", "리뷰 539개"),
+        ] %}
+        <div class="cp-hot-item">
+          <span class="cp-hot-rank">{{ loop.index }}</span>
+          <img class="cp-hot-poster" src="{{ poster }}" alt="{{ title }}"
+               onerror="this.src='https://placehold.co/36x54/1a1a1a/666?text=?'" />
+          <div style="flex:1;min-width:0;">
+            <div class="cp-hot-title">{{ title }}</div>
+            <div class="cp-hot-count">{{ count }}</div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+      <div class="cp-sidebar-box">
+        <h3>⭐ 이 달의 명리뷰</h3>
+        <div style="font-size:13px;color:var(--text-muted);line-height:1.8;">
+          <div style="color:var(--accent);font-weight:700;margin-bottom:6px;">🏆 별빛극장</div>
+          "드니 빌뇌브 감독의 영상미는 타의 추종을 불허합니다..."
+          <div style="margin-top:8px;font-size:12px;">공감 142개 · 듄: 파트 2</div>
+        </div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<!-- 리뷰 작성 모달 -->
+<div id="reviewModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);
+     z-index:999;align-items:center;justify-content:center;">
+  <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-lg);
+              padding:32px;width:90%;max-width:500px;position:relative;">
+    <button onclick="document.getElementById('reviewModal').style.display='none'"
+            style="position:absolute;top:16px;right:16px;background:none;border:none;
+                   color:var(--text-muted);font-size:20px;cursor:pointer;">✕</button>
+    <h3 style="font-weight:700;font-size:18px;margin-bottom:20px;">리뷰 작성</h3>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">영화 제목</label>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div id="rv-poster-wrap" style="flex-shrink:0;width:60px;height:90px;background:var(--bg-secondary);
+             border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;
+             display:flex;align-items:center;justify-content:center;">
+          <img id="rv-poster-img" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none;" />
+          <span id="rv-poster-placeholder" style="font-size:20px;">🎬</span>
+        </div>
+        <div style="flex:1;">
+          <input id="rv-movie" type="text"
+                 style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);
+                        border-radius:var(--radius-sm);padding:10px 12px;color:var(--text-primary);
+                        font-size:14px;outline:none;font-family:var(--font-body);margin-bottom:6px;"
+                 placeholder="영화 제목을 입력하세요" />
+          <div id="rv-search-result" style="font-size:12px;color:var(--text-muted);"></div>
+        </div>
+      </div>
+      <input type="hidden" id="rv-poster-url" />
+      <input type="hidden" id="rv-genre-val" />
+      <input type="hidden" id="rv-movie-id" />
+    </div>
+
+    <div style="margin-bottom:14px;">
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;display:block;">별점</label>
+      <div id="rv-stars" style="display:flex;gap:8px;font-size:24px;cursor:pointer;">
+        <span data-v="1" style="color:var(--border);">★</span>
+        <span data-v="2" style="color:var(--border);">★</span>
+        <span data-v="3" style="color:var(--border);">★</span>
+        <span data-v="4" style="color:var(--border);">★</span>
+        <span data-v="5" style="color:var(--border);">★</span>
+      </div>
+      <input type="hidden" id="rv-star-val" value="5" />
+    </div>
+
+    <div style="margin-bottom:20px;">
+      <label style="font-size:13px;color:var(--text-secondary);margin-bottom:6px;display:block;">리뷰 내용</label>
+      <textarea id="rv-text" rows="5"
+                style="width:100%;background:var(--bg-secondary);border:1px solid var(--border);
+                       border-radius:var(--radius-sm);padding:12px;color:var(--text-primary);
+                       font-size:14px;resize:vertical;outline:none;font-family:var(--font-body);"
+                placeholder="이 영화에 대한 생각을 자유롭게 남겨주세요..."></textarea>
+    </div>
+
+    <button onclick="submitReview()"
+            class="cp-btn cp-btn--primary" style="width:100%;padding:12px;font-size:14px;">
+      <i class="fa-solid fa-paper-plane"></i> 등록
+    </button>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  async function deleteReview(id) {
+    if (!confirm('이 리뷰를 삭제할까요?')) return;
+    const res = await fetch('/api/reviews/' + id, { method: 'DELETE' });
+    if (res.ok) { location.reload(); }
+    else { alert('삭제 실패. 다시 시도해 주세요.'); }
+  }
+  function toggleRvLike(el) {
+    const lc = el.querySelector('.lc');
+    const icon = el.querySelector('i');
+    const liked = el.dataset.liked === 'true';
+    el.dataset.liked = !liked;
+    lc.textContent = parseInt(lc.textContent.replace(',','')) + (liked ? -1 : 1);
+    icon.className = liked ? 'fa-regular fa-thumbs-up' : 'fa-solid fa-thumbs-up';
+    el.style.color = liked ? '' : 'var(--accent)';
+  }
+  function toggleRvExpand(id, btn) {
+    const el = document.getElementById(id);
+    el.classList.toggle('expanded');
+    btn.textContent = el.classList.contains('expanded') ? '접기' : '더 보기';
+  }
+
+  let selectedStar = 5;
+  document.getElementById('rv-stars').querySelectorAll('span').forEach(star => {
+    star.addEventListener('click', () => {
+      selectedStar = parseInt(star.dataset.v);
+      document.getElementById('rv-star-val').value = selectedStar;
+      document.querySelectorAll('#rv-stars span').forEach((s, i) => {
+        s.style.color = i < selectedStar ? 'var(--star)' : 'var(--border)';
+      });
+    });
+    star.addEventListener('mouseover', () => {
+      const v = parseInt(star.dataset.v);
+      document.querySelectorAll('#rv-stars span').forEach((s, i) => {
+        s.style.color = i < v ? 'var(--star)' : 'var(--border)';
+      });
+    });
+    star.addEventListener('mouseout', () => {
+      document.querySelectorAll('#rv-stars span').forEach((s, i) => {
+        s.style.color = i < selectedStar ? 'var(--star)' : 'var(--border)';
+      });
+    });
+  });
+  document.querySelectorAll('#rv-stars span').forEach((s, i) => {
+    s.style.color = i < 5 ? 'var(--star)' : 'var(--border)';
+  });
+
+  let searchTimer = null;
+  document.getElementById('rv-movie').addEventListener('input', function() {
+    clearTimeout(searchTimer);
+    const q = this.value.trim();
+    if (!q) {
+      document.getElementById('rv-poster-img').style.display = 'none';
+      document.getElementById('rv-poster-placeholder').style.display = 'block';
+      document.getElementById('rv-search-result').textContent = '';
+      document.getElementById('rv-poster-url').value = '';
+      document.getElementById('rv-genre-val').value = '';
+      return;
+    }
+    searchTimer = setTimeout(async () => {
+      document.getElementById('rv-search-result').textContent = '검색 중...';
+      try {
+        const res = await fetch('/api/movies/search?q=' + encodeURIComponent(q));
+        const data = await res.json();
+        const movies = data.results || [];
+        if (movies.length > 0) {
+          const m = movies[0];
+          const poster = m.poster || '';
+          document.getElementById('rv-poster-url').value = poster;
+          document.getElementById('rv-movie-id').value = m.id || '';
+          const GENRE_MAP = {28:'액션',12:'모험',16:'애니메이션',35:'코미디',80:'범죄',
+            18:'드라마',14:'판타지',27:'공포',10749:'로맨스',878:'SF',53:'스릴러'};
+          const genreId = m.genre_ids && m.genre_ids[0];
+          document.getElementById('rv-genre-val').value = GENRE_MAP[genreId] || '';
+          if (poster) {
+            document.getElementById('rv-poster-img').src = poster;
+            document.getElementById('rv-poster-img').style.display = 'block';
+            document.getElementById('rv-poster-placeholder').style.display = 'none';
+          }
+          document.getElementById('rv-search-result').innerHTML =
+            '<span style="color:var(--accent);">✓</span> ' + m.title;
+        } else {
+          document.getElementById('rv-search-result').textContent = '검색 결과 없음';
+        }
+      } catch(e) {
+        document.getElementById('rv-search-result').textContent = '';
+      }
+    }, 600);
+  });
+
+  async function submitReview() {
+    const movie  = document.getElementById('rv-movie').value.trim();
+    const text   = document.getElementById('rv-text').value.trim();
+    const stars  = parseInt(document.getElementById('rv-star-val').value);
+    if (!movie) { alert('영화 제목을 입력해 주세요.'); return; }
+    if (!text)  { alert('리뷰 내용을 입력해 주세요.'); return; }
+
+    const poster   = document.getElementById('rv-poster-url').value;
+    const movie_id = document.getElementById('rv-movie-id').value;
+    const genre    = document.getElementById('rv-genre-val').value;
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ movie_title: movie, stars, text, movie_poster: poster, movie_id: movie_id, genre: genre })
+    });
+    if (res.ok) {
+      alert('리뷰가 등록됐습니다!');
+      document.getElementById('reviewModal').style.display = 'none';
+      document.getElementById('rv-poster-img').style.display = 'none';
+      document.getElementById('rv-poster-placeholder').style.display = 'block';
+      document.getElementById('rv-poster-url').value = '';
+      document.getElementById('rv-search-result').textContent = '';
+      document.getElementById('rv-movie').value = '';
+      document.getElementById('rv-text').value = '';
+      location.reload();
+    } else {
+      alert('등록 실패. 다시 시도해 주세요.');
+    }
+  }
+</script>
+{% endblock %}
